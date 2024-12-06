@@ -1,0 +1,66 @@
+name: 'apply postgresql script'
+description: 'Check and apply postgresql script to target database'
+author: 'sidlen'
+inputs:
+  vault_url:
+    description: 'Vault url, where stored database secrets'
+    required: false
+    default: "${{ env.VAULT_URL }}"
+  vault_token:
+    description: 'Vault token'
+    required: false
+    default: "${{ secrets.VAULT_TOKEN }}"
+  vault_kv_engine:
+    description: 'KV engine in Vault'
+    required: false
+    default: "${{ env.VAULT_ENGINE }}"
+  vault_secret_path:
+    description: 'Vault secret path'
+    required: false
+    default: "${{ env.VAULT_SECRET }}"
+  db_host:
+    description: 'Database host address, if vault parameters is not set'
+    required: false
+    default: "${{ env.DB_HOST }}"
+  db_port:
+    description: 'Database host port, if vault parameters is not set'
+    required: false
+    default: "${{ env.DB_PORT }}"
+  db_name:
+    description: 'Database name, if vault parameters is not set'
+    required: false
+    default: "${{ env.DB_NAME }}"
+  db_username:
+    description: 'Database user, if vault parameters is not set'
+    required: false
+    default: "${{ env.DB_USER }}"
+  db_password:
+    description: 'Database password, if vault parameters is not set'
+    required: false
+    default: "${{ secrets.DB_PASSWORD }}"
+  directory_path:
+    description: 'Relative path to directory with .sql files to be applied to database'
+    required: true
+    default: "SQL_scripts_to_apply"
+  apply:
+    description: 'Apply script to database'
+    required: false
+    default: "false"
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  env:
+    DIRECTORY_PATH: "${{ inputs.directory_path }}"
+    VAULT_URL: "${{ inputs.vault_url }}"
+    VAULT_TOKEN: "${{ inputs.vault_token }}"
+    KV_ENGINE: "${{ inputs.vault_kv_engine }}"
+    SECRET_PATH: "${{ inputs.vault_secret_path }}"
+    DB_HOST: "${{ inputs.db_host }}"
+    DB_PORT: "${{ inputs.db_port }}"
+    DB_NAME: "${{ inputs.db_name }}"
+    DB_USER: "${{ inputs.db_username }}"
+    DB_PASSWORD: "${{ inputs.db_password}}"
+    APPLY: "${{ inputs.apply }}"
+outputs:
+  result_map:
+    description: 'Map of applied .sql files'
