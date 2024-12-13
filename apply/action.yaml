@@ -62,5 +62,5 @@ runs:
     DB_PASSWORD: "${{ inputs.db_password}}"
     APPLY: "${{ inputs.apply }}"
 outputs:
-  result_map:
-    description: 'Map of applied .sql files'
+  output_data:
+    description: 'dict of applied .sql files'

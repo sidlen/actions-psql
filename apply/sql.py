@@ -2,6 +2,7 @@ import os
 import psycopg2
 import hvac
 import sqlparse
+import json
 
 dangerous_keywords = ["CREATE", "ALTER", "DROP", "RENAME", "TRUNCATE", "GRANT", "REVOKE", "VACUUM", "ANALYZE", "REINDEX", "REFRESH MATERIALIZED VIEW", "SET", "RESET", "SHOW", "LOCK", "DISCARD", "CHECKPOINT", "LISTEN", "NOTIFY", "UNLISTEN", "BEGIN", "COMMIT", "ROLLBACK", "SAVEPOINT", "RELEASE"]
 ddl_keywords = ["SET", "RESET", "SHOW", "LISTEN", "NOTIFY", "UNLISTEN", "BEGIN", "COMMIT", "ROLLBACK", "SAVEPOINT", "RELEASE"]
@@ -127,7 +128,7 @@ def process_directory(directory_path, apply=False):
         import json
         json.dump(result_map, result_file, ensure_ascii=False, indent=4)
 
-    return None
+    return result_map
 
 def string_to_bool(str):
   return str.lower() in ['true', 'yes', '1']
@@ -139,4 +140,18 @@ if __name__ == "__main__":
     if not directory_path:
         raise ValueError("Переменная окружения DIRECTORY_PATH должна быть задана")
 
-    process_directory(directory_path, apply=apply_flag)
+    applied_files_map = process_directory(directory_path, apply=apply_flag)
+    output_data = {
+        "status": "true",
+        "comment": "Скрипты применены успешно",
+        "applied_files": [],
+        "not_applied_files": []
+    }
+    for file, status in applied_files_map.items():
+        if status:
+            output_data["applied_files"].append(file)
+        else:
+            output_data["not_applied_files"].append(file)
+    with open("output.json", "w") as json_file:
+        json.dump(output_data, json_file, ensure_ascii=False)
+    print(json.dumps(output_data, ensure_ascii=False))
