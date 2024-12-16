@@ -3,6 +3,7 @@ import psycopg2
 import hvac
 import sqlparse
 import json
+import sys
 
 dangerous_keywords = ["CREATE", "ALTER", "DROP", "RENAME", "TRUNCATE", "GRANT", "REVOKE", "VACUUM", "ANALYZE", "REINDEX", "REFRESH MATERIALIZED VIEW", "SET", "RESET", "SHOW", "LOCK", "DISCARD", "CHECKPOINT", "LISTEN", "NOTIFY", "UNLISTEN", "BEGIN", "COMMIT", "ROLLBACK", "SAVEPOINT", "RELEASE"]
 ddl_keywords = ["SET", "RESET", "SHOW", "LISTEN", "NOTIFY", "UNLISTEN", "BEGIN", "COMMIT", "ROLLBACK", "SAVEPOINT", "RELEASE"]
@@ -81,6 +82,16 @@ def execute_scripts_from_files(conn, directory_path, apply=False):
     return result_map
 
 def process_directory(directory_path, apply=False):
+
+    for root, _, files in os.walk(directory_path):
+        for file in files:
+            if file.endswith(".sql"):
+                found_sql_files = True
+                break
+
+    if not found_sql_files:
+        print(f"\033[91m[ERROR]\033[0m Не найдено ни одного файла с расширением .sql")
+        sys.exit(1)
 
     vault_required_env_vars = ['VAULT_URL', 'VAULT_TOKEN', 'KV_ENGINE', 'SECRET_PATH']
     vault_env = {var: os.environ.get(var) for var in vault_required_env_vars}

@@ -41,7 +41,7 @@ inputs:
   directory_path:
     description: 'Relative path to directory with .sql files to be applied to database'
     required: true
-    default: "SQL_scripts_to_apply"
+    default: "${{ gitea.workspace }}/SQL_scripts_to_apply"
   apply:
     description: 'Apply script to database'
     required: false
