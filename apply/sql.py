@@ -90,7 +90,7 @@ def process_directory(directory_path, apply=False):
                 break
 
     if not found_sql_files:
-        print(f"\033[91m[ERROR]\033[0m Не найдено ни одного файла с расширением .sql")
+        print(f"\033[91m[ERROR]\033[0m Не найдено ни одного файла с расширением .sql в директории {directory_path}")
         sys.exit(1)
 
     vault_required_env_vars = ['VAULT_URL', 'VAULT_TOKEN', 'KV_ENGINE', 'SECRET_PATH']
