@@ -82,7 +82,7 @@ def execute_scripts_from_files(conn, directory_path, apply=False):
     return result_map
 
 def process_directory(directory_path, apply=False):
-
+    found_sql_files = False
     for root, _, files in os.walk(directory_path):
         for file in files:
             if file.endswith(".sql"):
