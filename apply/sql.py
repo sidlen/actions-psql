@@ -35,7 +35,7 @@ def explain_query(conn, query):
     cursor = conn.cursor()
     try:
         if any(keyword in query.upper() for keyword in combine_list_keywords):
-            return f"\033[93mWARNING\033[0m: Пропуск неподдерживаемой команды при EXPLAIN:\n{query.strip()}"
+            return f"\033[93mWARNING\033[0m: Пропуск проверки с помощью EXPLAIN, так как тип запроса неподдерживается:\n{query.strip()}"
         cursor.execute("EXPLAIN " + query)
         result = cursor.fetchall()
         explain_output = "\n".join([row[0] for row in result])
@@ -54,7 +54,7 @@ def execute_scripts_from_files(conn, directory_path, apply=False):
                 file_path = os.path.join(root, file)
                 with open(file_path, 'r', encoding='utf-8') as script_file:
                     script = script_file.read()
-
+                print(f"{file:.>30}")
                 print(f"[INFO] Проверка файла: {file_path}")
 
                 print(f"[INFO] Проверка на наличие деструктивных команд: {check_file_for_dangerous_keywords(file_path)}")
@@ -75,10 +75,11 @@ def execute_scripts_from_files(conn, directory_path, apply=False):
                         result_map[file] = True
                         print(f"\033[92m[INFO] Скрипт применен: {file_path}\033[0m")
                     except Exception as e:
-                        print(f"\033[91m[ERROR]\033[0m Ошибка при применении скрипта {file_path}: {e}")
+                        print(f"\033[91m[ERROR] Ошибка при применении скрипта {file_path}\033[0m: {e}")
                         conn.rollback()
                         cursor.close()
                         result_map[file] = False
+                print(f"{file:.>30}")
     return result_map
 
 def process_directory(directory_path, apply=False):
@@ -152,17 +153,24 @@ if __name__ == "__main__":
         raise ValueError("Переменная окружения DIRECTORY_PATH должна быть задана")
 
     applied_files_map = process_directory(directory_path, apply=apply_flag)
+    
     output_data = {
         "status": "true",
-        "comment": "Скрипты применены успешно",
+        "comment": "",
         "applied_files": [],
         "not_applied_files": []
     }
-    for file, status in applied_files_map.items():
-        if status:
-            output_data["applied_files"].append(file)
-        else:
-            output_data["not_applied_files"].append(file)
-    with open("output.json", "w") as json_file:
-        json.dump(output_data, json_file, ensure_ascii=False)
-    print(json.dumps(output_data, ensure_ascii=False))
+    if apply_flag:
+        counter_files = 0
+        for file, status in applied_files_map.items():
+            if status:
+                output_data["applied_files"].append(file)
+                counter_files += 1
+            else:
+                output_data["not_applied_files"].append(file)
+        output_data["comment"] = f"Применено скриптов: {counter_files}"
+        with open("output.json", "w") as json_file:
+            json.dump(output_data, json_file, ensure_ascii=False)
+        print(json.dumps(output_data, ensure_ascii=False))
+    else:
+        print(f"\033[93mПроверка скриптов выполнена, проанализируйте лог перед применением\033[0m:")
