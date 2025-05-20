@@ -35,7 +35,7 @@ def explain_query(conn, query):
     cursor = conn.cursor()
     try:
         if any(keyword in query.upper() for keyword in combine_list_keywords):
-            return f"\033[93mWARNING\033[0m: Пропуск проверки с помощью EXPLAIN, так как тип запроса неподдерживается:\n{query.strip()}"
+            return f"\033[93m[WARNING]\033[0m: Пропуск проверки с помощью EXPLAIN, так как тип запроса неподдерживается:\n{query.strip()}"
         cursor.execute("EXPLAIN " + query)
         result = cursor.fetchall()
         explain_output = "\n".join([row[0] for row in result])
@@ -169,7 +169,7 @@ if __name__ == "__main__":
             else:
                 output_data["not_applied_files"].append(file)
         output_data["comment"] = f"Применено скриптов: {counter_files}"
-        with open("output.json", "w") as json_file:
+        with open("psqloutput.json", "w") as json_file:
             json.dump(output_data, json_file, ensure_ascii=False)
         print(json.dumps(output_data, ensure_ascii=False))
     else:
