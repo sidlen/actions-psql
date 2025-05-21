@@ -166,7 +166,7 @@ if __name__ == "__main__":
         "comment": "",
         "applied_files": [],
         "not_applied_files": [],
-        "applied_time": str(get_ntp_time)
+        "applied_time": applied_time
     }
     if apply_flag:
         counter_files = 0
