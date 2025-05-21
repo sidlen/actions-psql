@@ -4,10 +4,18 @@ import hvac
 import sqlparse
 import json
 import sys
+import ntplib
+from datetime import datetime, timezone
 
 dangerous_keywords = ["CREATE", "ALTER", "DROP", "RENAME", "TRUNCATE", "GRANT", "REVOKE", "VACUUM", "ANALYZE", "REINDEX", "REFRESH MATERIALIZED VIEW", "SET", "RESET", "SHOW", "LOCK", "DISCARD", "CHECKPOINT", "LISTEN", "NOTIFY", "UNLISTEN", "BEGIN", "COMMIT", "ROLLBACK", "SAVEPOINT", "RELEASE"]
 ddl_keywords = ["SET", "RESET", "SHOW", "LISTEN", "NOTIFY", "UNLISTEN", "BEGIN", "COMMIT", "ROLLBACK", "SAVEPOINT", "RELEASE"]
 combine_list_keywords = dangerous_keywords + ddl_keywords
+
+def get_ntp_time(ntp_server=None):
+    server = ntp_server if ntp_server else "pool.ntp.org"
+    client = ntplib.NTPClient()
+    response = client.request(server)
+    return datetime.fromtimestamp(response.tx_time, timezone.utc)
 
 def get_secrets_from_vault(vault_url, vault_token, kv_engine, secret_path):
     try:
@@ -151,14 +159,14 @@ if __name__ == "__main__":
     apply_flag = string_to_bool(apply_flag)
     if not directory_path:
         raise ValueError("Переменная окружения DIRECTORY_PATH должна быть задана")
-
     applied_files_map = process_directory(directory_path, apply=apply_flag)
     
     output_data = {
         "status": "true",
         "comment": "",
         "applied_files": [],
-        "not_applied_files": []
+        "not_applied_files": [],
+        "applied_time": get_ntp_time
     }
     if apply_flag:
         counter_files = 0
