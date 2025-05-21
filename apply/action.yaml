@@ -46,6 +46,10 @@ inputs:
     description: 'Apply script to database'
     required: false
     default: "false"
+  ntp_server:
+    description: 'NTP server to get script start time'
+    required: false
+    default: "pool.ntp.org"
 runs:
   using: 'docker'
   image: 'Dockerfile'
@@ -61,6 +65,7 @@ runs:
     DB_USER: "${{ inputs.db_username }}"
     DB_PASSWORD: "${{ inputs.db_password}}"
     APPLY: "${{ inputs.apply }}"
+    NTP_SERVER: "${{ inputs.ntp_server }}"
 outputs:
   output_data:
     description: 'dict of applied .sql files'

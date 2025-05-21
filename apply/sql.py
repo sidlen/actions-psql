@@ -12,9 +12,8 @@ ddl_keywords = ["SET", "RESET", "SHOW", "LISTEN", "NOTIFY", "UNLISTEN", "BEGIN",
 combine_list_keywords = dangerous_keywords + ddl_keywords
 
 def get_ntp_time(ntp_server=None):
-    server = ntp_server if ntp_server else "pool.ntp.org"
     client = ntplib.NTPClient()
-    response = client.request(server)
+    response = client.request(ntp_server)
     return datetime.fromtimestamp(response.tx_time, timezone.utc)
 
 def get_secrets_from_vault(vault_url, vault_token, kv_engine, secret_path):
@@ -157,16 +156,17 @@ if __name__ == "__main__":
     directory_path = os.environ.get('DIRECTORY_PATH')
     apply_flag = os.environ.get('APPLY')
     apply_flag = string_to_bool(apply_flag)
+    ntp_server = os.environ.get('NTP_SERVER')
     if not directory_path:
         raise ValueError("Переменная окружения DIRECTORY_PATH должна быть задана")
     applied_files_map = process_directory(directory_path, apply=apply_flag)
-    
+    applied_time = get_ntp_time(ntp_server).strftime("%Y-%m-%d %H:%M:%S.%f UTC")
     output_data = {
         "status": "true",
         "comment": "",
         "applied_files": [],
         "not_applied_files": [],
-        "applied_time": get_ntp_time
+        "applied_time": str(get_ntp_time)
     }
     if apply_flag:
         counter_files = 0
